@@ -22,7 +22,7 @@ async function run(){
        const categories = client.db('resale-server').collection('products-categories');
        const products = client.db('resale-server').collection('products');
        const orders = client.db('resale-server').collection('ordersCollection');
-       const users = client.db('resale-server').collection('userCollection'); 
+       const userColl = client.db('resale-server').collection('userCollection'); 
 
        app.get('/categories', async(req, res) =>{
         const query = {};
@@ -66,6 +66,7 @@ async function run(){
             const proList = await cursor.toArray();
             res.send(proList);
         })
+
         //Users Orders
         app.post('/myorders', async(req, res)=>{
             const mord = req.body;
@@ -85,10 +86,17 @@ async function run(){
             res.send(orList);
         })
 
+        app.delete('/myorders/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await orders.deleteOne(query);
+            res.send(result);
+        });
+
         //User Collection
         app.post('/users', async(req, res)=>{
             const users = req.body;
-            const result = await orders.insertOne(users);
+            const result = await userColl.insertOne(users);
             res.send(result);
         })
     }
