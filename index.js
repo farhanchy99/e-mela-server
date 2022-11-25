@@ -84,6 +84,13 @@ async function run(){
             const orList = await cursor.toArray();
             res.send(orList);
         })
+
+        //User Collection
+        app.post('/users', async(req, res)=>{
+            const users = req.body;
+            const result = await orders.insertOne(users);
+            res.send(result);
+        })
     }
     finally{
 
