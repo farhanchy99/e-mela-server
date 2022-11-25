@@ -21,6 +21,8 @@ async function run(){
     try{
        const categories = client.db('resale-server').collection('products-categories');
        const products = client.db('resale-server').collection('products');
+       const orders = client.db('resale-server').collection('ordersCollection');
+       const users = client.db('resale-server').collection('userCollection'); 
 
        app.get('/categories', async(req, res) =>{
         const query = {};
@@ -34,14 +36,6 @@ async function run(){
         const cat = await categories.findOne(query);
         res.send(cat);
         });
-        
-
-        //add products
-        // app.get('/products', async(req, res) =>{
-        //     const query = {};
-        //     const pros = await products.find(query).toArray();
-        //     res.send(pros);
-        //    }),
 
         app.post('/products', async(req, res)=>{
             const pro = req.body;
@@ -61,13 +55,6 @@ async function run(){
             res.send(proList);
         })
 
-        app.get('/products/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const proId = await categories.findOne(query);
-            res.send(proId);
-        });
-
         app.get('/myproducts', async(req, res)=>{
             let query ={};
             if(req.query.email){
@@ -78,6 +65,24 @@ async function run(){
             const cursor = products.find(query)
             const proList = await cursor.toArray();
             res.send(proList);
+        })
+        //Users Orders
+        app.post('/myorders', async(req, res)=>{
+            const mord = req.body;
+            const result = await orders.insertOne(mord);
+            res.send(result);
+        })
+
+        app.get('/myorders', async(req, res)=>{
+            let query ={};
+            if(req.query.email){
+                query={
+                    email: req.query.email
+                }
+            }
+            const cursor = orders.find(query)
+            const orList = await cursor.toArray();
+            res.send(orList);
         })
     }
     finally{
