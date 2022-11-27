@@ -22,8 +22,10 @@ async function run(){
        const categories = client.db('resale-server').collection('products-categories');
        const products = client.db('resale-server').collection('products');
        const orders = client.db('resale-server').collection('ordersCollection');
-       const userColl = client.db('resale-server').collection('userCollection'); 
-
+       const userColl = client.db('resale-server').collection('userCollection');
+       
+       
+//Categories DATA
        app.get('/categories', async(req, res) =>{
         const query = {};
         const cats = await categories.find(query).toArray();
