@@ -59,7 +59,7 @@ async function run(){
             res.send(proList);
         })
 
-//Sell Add Products DATA
+//Seller Add Products DATA
         app.get('/myproducts', async(req, res)=>{
             let query ={};
             if(req.query.email){
