@@ -120,9 +120,97 @@ async function run(){
         });
 
         //User Collection
+
+        app.get('/users', async(req, res) =>{
+            const query = {};
+            const users = await userColl.find(query).toArray();
+            res.send(users);
+        }),
+
+        // app.patch('/users/allsellers', async(req, res)=>{
+        //     let query ={};
+        //     if(req.query.role){
+        //         query={
+        //             role: req.query.role
+        //         }
+        //     }
+        //     const cursor = userColl.find(query)
+        //     const seller = await cursor.toArray();
+        //     res.send(seller);
+        // })
+
+        app.get("/users/admin", async (req, res) => {
+            query = { role: "Admin" };
+            const admin = await userColl.find(query).toArray()
+            res.send(admin);
+        });
+
+        app.get("/users/admin/:email", async (req, res) => {
+            const email = req.params.email;
+            const query = { email };
+            const user = await userColl.findOne(query);
+            res.send({isAdmin: user?.role === 'Admin'});
+        });
+
+        app.get("/users/allsellers", async (req, res) => {
+            query = { role: "Seller" };
+            const seller = await userColl.find(query).sort({
+                time:-1
+            }).toArray()
+            
+            res.send(seller);
+        });
+
+        app.get("/users/allsellers/:email", async (req, res) => {
+            const email = req.params.email;
+            const query = { email };
+            const userSeller = await userColl.findOne(query);
+            res.send({isSeller: userSeller?.role === 'Seller'});
+        });
+
+        app.get("/users/allbuyers", async (req, res) => {
+            query = { role: "Buyer" };
+            const buyer = await userColl.find(query).sort({
+                time:-1
+            }).toArray()
+            
+            res.send(buyer);
+        });
+
+        app.get("/users/allbuyers/:email", async (req, res) => {
+            const email = req.params.email;
+            const query = { email };
+            const userBuyer = await userColl.findOne(query);
+            res.send({isBuyer: userBuyer?.role === 'Buyer'});
+        });
+
+        // app.put('/users/sellers/:id', async(req, res)=>{
+        //     const id =req.params.id;
+        //     const filter = { _id: ObjectId(id) };
+        //     const option = {upsert : true};
+        //     const UpdatedDoc ={
+        //         $set: {
+        //             role: 'seller'
+        //         }
+        //     };
+        //     const result = await userColl.updateOne(
+        //         filter,
+        //         UpdatedDoc,
+        //         option
+        //     );
+        //     res.send(result);
+        // })
+
+        app.delete('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await userColl.deleteOne(query);
+            res.send(result);
+        });
+
         app.post('/users', async(req, res)=>{
-            const users = req.body;
-            const result = await userColl.insertOne(users);
+            const user = req.body;
+            const result = await userColl.insertOne(user);
             res.send(result);
         })
     }
