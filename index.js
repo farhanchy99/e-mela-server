@@ -39,6 +39,8 @@ async function run(){
         res.send(cat);
         });
 
+
+//Products DATA
         app.post('/products', async(req, res)=>{
             const pro = req.body;
             const result = await products.insertOne(pro);
