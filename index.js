@@ -67,6 +67,32 @@ async function run(){
             res.send(proList);
         })
 
+        app.get("/advertisement", async (req, res) => {
+            query = { advertise: "true" };
+            const prod = await products.find(query).sort({
+                time:-1
+            }).toArray()
+            
+            res.send(prod);
+          });
+
+        app.patch('/product/ad/:id', async(req, res)=>{
+            const id =req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const option = {upsert : true};
+            const UpdatedDoc ={
+                $set: {
+                    advertise: 'true'
+                }
+            };
+            const result = await products.updateOne(
+                filter,
+                UpdatedDoc,
+                option
+            );
+            res.send(result);
+        })
+
         //Users Orders
         app.post('/myorders', async(req, res)=>{
             const mord = req.body;
