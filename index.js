@@ -159,6 +159,7 @@ async function run(){
             res.send({isAdmin: user?.role === 'Admin'});
         });
 
+        //Sellers DATA
         app.get("/users/allsellers", async (req, res) => {
             query = { role: "Seller" };
             const seller = await userColl.find(query).sort({
