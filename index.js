@@ -126,12 +126,25 @@ async function run(){
         });
 
 
-//User Collection
+//AllUser Collection
         app.get('/users', async(req, res) =>{
             const query = {};
             const users = await userColl.find(query).toArray();
             res.send(users);
         }),
+
+        app.delete('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await userColl.deleteOne(query);
+            res.send(result);
+        });
+
+        app.post('/users', async(req, res)=>{
+            const user = req.body;
+            const result = await userColl.insertOne(user);
+            res.send(result);
+        })
 
         // app.patch('/users/allsellers', async(req, res)=>{
         //     let query ={};
@@ -186,13 +199,6 @@ async function run(){
             res.send(buyer);
         });
 
-        app.get("/users/allbuyers/:email", async (req, res) => {
-            const email = req.params.email;
-            const query = { email };
-            const userBuyer = await userColl.findOne(query);
-            res.send({isBuyer: userBuyer?.role === 'Buyer'});
-        });
-
         // app.put('/users/sellers/:id', async(req, res)=>{
         //     const id =req.params.id;
         //     const filter = { _id: ObjectId(id) };
@@ -210,18 +216,7 @@ async function run(){
         //     res.send(result);
         // })
 
-        app.delete('/users/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const result = await userColl.deleteOne(query);
-            res.send(result);
-        });
-
-        app.post('/users', async(req, res)=>{
-            const user = req.body;
-            const result = await userColl.insertOne(user);
-            res.send(result);
-        })
+        
     }
     finally{
 
