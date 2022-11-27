@@ -72,6 +72,7 @@ async function run(){
             res.send(proList);
         })
 
+//Product Advertise DATA
         app.get("/advertisement", async (req, res) => {
             query = { advertise: "true" };
             const prod = await products.find(query).sort({
