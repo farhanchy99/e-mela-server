@@ -118,6 +118,7 @@ async function run(){
             res.send(orList);
         })
 
+        //Delete User
         app.delete('/myorders/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -140,7 +141,7 @@ async function run(){
             const result = await userColl.deleteOne(query);
             res.send(result);
         });
-        
+
         //Post User
         app.post('/users', async(req, res)=>{
             const user = req.body;
