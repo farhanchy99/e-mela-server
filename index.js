@@ -99,7 +99,7 @@ async function run(){
             res.send(result);
         })
 
-        //Users Orders
+//Users Orders
         app.post('/myorders', async(req, res)=>{
             const mord = req.body;
             const result = await orders.insertOne(mord);
@@ -125,8 +125,8 @@ async function run(){
             res.send(result);
         });
 
-        //User Collection
 
+//User Collection
         app.get('/users', async(req, res) =>{
             const query = {};
             const users = await userColl.find(query).toArray();
@@ -145,6 +145,7 @@ async function run(){
         //     res.send(seller);
         // })
 
+        //ADMIN
         app.get("/users/admin", async (req, res) => {
             query = { role: "Admin" };
             const admin = await userColl.find(query).toArray()
