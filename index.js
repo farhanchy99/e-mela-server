@@ -192,6 +192,23 @@ async function run(){
             res.send({isSeller: userSeller?.role === 'Seller'});
         });
 
+        app.patch("/seller/verify/:id", async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const option = { upsert: true };
+            const UpdatedDoc = {
+              $set: {
+                Verify: "true",
+              },
+            };
+            const result = await userColl.updateOne(
+              filter,
+              UpdatedDoc,
+              option
+            );
+            res.send(result);
+          });
+
         //Buyers DATA
         app.get("/users/allbuyers", async (req, res) => {
             query = { role: "Buyer" };
