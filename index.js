@@ -184,7 +184,8 @@ async function run(){
             
             res.send(seller);
         });
-
+        
+        //Seller verify
         app.get("/users/allsellers/:email", async (req, res) => {
             const email = req.params.email;
             const query = { email };
