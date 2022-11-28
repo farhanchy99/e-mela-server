@@ -5,6 +5,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors')
 const port = process.env.PORT || 5000;
 require('dotenv').config();
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 
 app.use(cors());
@@ -23,6 +24,7 @@ async function run(){
        const products = client.db('resale-server').collection('products');
        const orders = client.db('resale-server').collection('ordersCollection');
        const userColl = client.db('resale-server').collection('userCollection');
+       const payments = client.db('resale-server').collection('paymentCollection');
        
        
 //Categories DATA
@@ -52,6 +54,18 @@ async function run(){
             if(req.query.brand){
                 query={
                     brand: req.query.brand
+                }
+            }
+            const cursor = products.find(query)
+            const proList = await cursor.toArray();
+            res.send(proList);
+        })
+
+        app.get('/products', async(req, res)=>{
+            let query ={};
+            if(req.query.email){
+                query={
+                    email: req.query.email
                 }
             }
             const cursor = products.find(query)
@@ -99,6 +113,39 @@ async function run(){
             res.send(result);
         })
 
+        app.patch('/product/report/:id', async(req, res)=>{
+            const id =req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const option = {upsert : true};
+            const UpdatedDoc ={
+                $set: {
+                    report: 'true'
+                }
+            };
+            const result = await products.updateOne(
+                filter,
+                UpdatedDoc,
+                option
+            );
+            res.send(result);
+        })
+
+        app.get("/reportitems", async (req, res) => {
+            query = { report: "true" };
+            const reports = await products.find(query).sort({
+                time:-1
+            }).toArray()
+            
+            res.send(reports);
+          });
+
+        app.delete('/reportitem/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await products.deleteOne(query);
+            res.send(result);
+        });
+
 //Users Orders
         app.post('/myorders', async(req, res)=>{
             const mord = req.body;
@@ -118,7 +165,47 @@ async function run(){
             res.send(orList);
         })
 
-        //Delete User
+        app.get('/myorders/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await orders.findOne(query);
+            res.send(result);
+        });
+
+        //Payment
+        app.post('/create-payment-intent', async (req, res) => {
+            const orders = req.body;
+            const price = orders.price;
+            const amount = price * 100;
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                currency: 'usd',
+                amount: amount,
+                "payment_method_types": [
+                    "card"
+                ]
+            });
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        });
+
+        app.post('/payments', async (req, res) =>{
+            const payment = req.body;
+            const result = await payments.insertOne(payment);
+            const id = payment.bookingId
+            const filter = {_id: ObjectId(id)}
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
+            }
+            const updatedResult = await orders.updateOne(filter, updatedDoc)
+            res.send(result);
+        })
+
+        //Delete Order
         app.delete('/myorders/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -149,18 +236,6 @@ async function run(){
             res.send(result);
         })
 
-        // app.patch('/users/allsellers', async(req, res)=>{
-        //     let query ={};
-        //     if(req.query.role){
-        //         query={
-        //             role: req.query.role
-        //         }
-        //     }
-        //     const cursor = userColl.find(query)
-        //     const seller = await cursor.toArray();
-        //     res.send(seller);
-        // })
-
         //ADMIN
         app.get("/users/admin", async (req, res) => {
             query = { role: "Admin" };
@@ -184,15 +259,16 @@ async function run(){
             
             res.send(seller);
         });
-        
-        //Seller verify
+
         app.get("/users/allsellers/:email", async (req, res) => {
             const email = req.params.email;
             const query = { email };
             const userSeller = await userColl.findOne(query);
             res.send({isSeller: userSeller?.role === 'Seller'});
         });
+        
 
+        //Seller verify
         app.patch("/seller/verify/:id", async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
@@ -210,6 +286,19 @@ async function run(){
             res.send(result);
           });
 
+          app.get('/verified', async(req, res)=>{
+            let query ={};
+            if(req.query.email){
+                query={
+                    email: req.query.email
+                }
+            }
+            const cursor = userColl.find(query)
+            const verify = await cursor.toArray();
+            res.send(verify);
+        })
+
+
         //Buyers DATA
         app.get("/users/allbuyers", async (req, res) => {
             query = { role: "Buyer" };
@@ -218,6 +307,13 @@ async function run(){
             }).toArray()
             
             res.send(buyer);
+        });
+
+        app.get("/users/allbuyers/:email", async (req, res) => {
+            const email = req.params.email;
+            const query = { email };
+            const userBuyer = await userColl.findOne(query);
+            res.send({isBuyer: userBuyer?.role === 'Buyer'});
         });
 
         // app.put('/users/sellers/:id', async(req, res)=>{
